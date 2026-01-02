@@ -1,0 +1,82 @@
+# Render Blueprint for Goals Tracker
+# https://render.com/docs/blueprint-spec
+
+services:
+  # Main web service
+  - type: web
+    name: goals-tracker
+    runtime: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11"
+      - key: DB_PATH
+        value: /var/data/goals.db
+      - key: SECRET_KEY
+        generateValue: true
+      - key: CRON_SECRET
+        generateValue: true
+      - key: APP_PASSWORD
+        sync: false  # Set manually
+      - key: PERSON_1_NAME
+        sync: false  # Set manually (e.g., "Mark")
+      - key: PERSON_2_NAME
+        sync: false  # Set manually (e.g., "Sarah")
+      - key: GMAIL_ADDRESS
+        sync: false  # Set manually
+      - key: GMAIL_APP_PASSWORD
+        sync: false  # Set manually
+      - key: RECIPIENT_EMAILS
+        sync: false  # Set manually (comma-separated)
+      - key: APP_URL
+        sync: false  # Set to your Render URL after deployment
+      - key: RENDER
+        value: "true"
+    disk:
+      name: goals-data
+      mountPath: /var/data
+      sizeGB: 1
+    healthCheckPath: /health
+    autoDeploy: true
+
+  # Monthly email cron job
+  - type: cron
+    name: goals-monthly-email
+    runtime: python
+    region: oregon
+    plan: free
+    schedule: "0 9 1 * *"  # 9 AM on the 1st of every month
+    buildCommand: pip install requests
+    startCommand: |
+      python -c "
+      import os
+      import requests
+      
+      url = os.environ.get('WEB_SERVICE_URL', '') + '/api/email/monthly-summary'
+      secret = os.environ.get('CRON_SECRET', '')
+      
+      try:
+          response = requests.post(
+              url,
+              headers={'Authorization': f'Bearer {secret}'},
+              timeout=30
+          )
+          print(f'Response: {response.status_code} - {response.text}')
+      except Exception as e:
+          print(f'Error: {e}')
+      "
+    envVars:
+      - key: WEB_SERVICE_URL
+        fromService:
+          name: goals-tracker
+          type: web
+          property: url
+      - key: CRON_SECRET
+        fromService:
+          name: goals-tracker
+          type: web
+          envVarKey: CRON_SECRET
+

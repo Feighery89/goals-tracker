@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Goals 2026</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>">
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="login-screen" class="login-screen">
+        <div class="login-container">
+            <div class="login-icon">🌅</div>
+            <h1>Our Goals 2026</h1>
+            <p class="login-subtitle">A new year, new dreams together</p>
+            <form id="login-form">
+                <input 
+                    type="password" 
+                    id="password-input" 
+                    placeholder="Enter password" 
+                    autocomplete="current-password"
+                    required
+                >
+                <button type="submit" class="btn btn-primary">
+                    <span>Enter</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                </button>
+            </form>
+            <p id="login-error" class="login-error"></p>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="app" class="app hidden">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="logo">🌅 Our Goals 2026</h1>
+                <button id="logout-btn" class="btn btn-ghost">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                        <polyline points="16 17 21 12 16 7"/>
+                        <line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Goals Dashboard -->
+        <main class="dashboard">
+            <div class="dashboard-grid" id="dashboard-grid">
+                <!-- Person columns will be injected here -->
+            </div>
+        </main>
+
+        <!-- Add Goal Modal -->
+        <div id="add-goal-modal" class="modal hidden">
+            <div class="modal-backdrop"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Add New Goal</h2>
+                    <button class="modal-close" onclick="closeModal('add-goal-modal')">&times;</button>
+                </div>
+                <form id="add-goal-form">
+                    <input type="hidden" id="goal-person" name="person">
+                    
+                    <div class="form-group">
+                        <label for="goal-title">What's your goal?</label>
+                        <input type="text" id="goal-title" name="title" placeholder="e.g., Run a marathon" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="goal-description">Description (optional)</label>
+                        <textarea id="goal-description" name="description" placeholder="Why is this important to you?"></textarea>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="goal-category">Category</label>
+                            <select id="goal-category" name="category">
+                                <!-- Categories injected dynamically -->
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="goal-target">Target Date</label>
+                            <input type="date" id="goal-target" name="target_date">
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('add-goal-modal')">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Create Goal</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Check-in Modal -->
+        <div id="checkin-modal" class="modal hidden">
+            <div class="modal-backdrop"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Add Check-in</h2>
+                    <button class="modal-close" onclick="closeModal('checkin-modal')">&times;</button>
+                </div>
+                <form id="checkin-form">
+                    <input type="hidden" id="checkin-goal-id">
+                    
+                    <div class="form-group">
+                        <label for="checkin-note">How's it going?</label>
+                        <textarea id="checkin-note" name="note" placeholder="Share your progress..." required></textarea>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('checkin-modal')">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Check-in</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Goal Detail Modal -->
+        <div id="goal-detail-modal" class="modal hidden">
+            <div class="modal-backdrop"></div>
+            <div class="modal-content modal-large">
+                <div class="modal-header">
+                    <h2 id="detail-goal-title">Goal Details</h2>
+                    <button class="modal-close" onclick="closeModal('goal-detail-modal')">&times;</button>
+                </div>
+                <div id="goal-detail-content">
+                    <!-- Content injected dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confetti Canvas -->
+    <canvas id="confetti-canvas"></canvas>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
+
