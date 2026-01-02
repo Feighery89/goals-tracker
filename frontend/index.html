@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Our Goals 2026</title>
+    <title>G&M Goals</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/styles.css">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💕</text></svg>">
 </head>
 <body>
     <!-- Login Screen -->
     <div id="login-screen" class="login-screen">
         <div class="login-container">
-            <div class="login-icon">🌅</div>
-            <h1>Our Goals 2026</h1>
-            <p class="login-subtitle">A new year, new dreams together</p>
+            <div class="login-icon">💕</div>
+            <h1>G&M Goals</h1>
+            <p class="login-subtitle">Our yearly dreams together</p>
             <form id="login-form">
                 <input 
                     type="password" 
@@ -41,15 +41,21 @@
         <!-- Header -->
         <header class="header">
             <div class="header-content">
-                <h1 class="logo">🌅 Our Goals 2026</h1>
-                <button id="logout-btn" class="btn btn-ghost">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                        <polyline points="16 17 21 12 16 7"/>
-                        <line x1="21" y1="12" x2="9" y2="12"/>
-                    </svg>
-                    <span>Logout</span>
-                </button>
+                <h1 class="logo">💕 G&M Goals</h1>
+                <div class="header-controls">
+                    <div class="year-selector">
+                        <select id="year-select">
+                            <!-- Years populated dynamically -->
+                        </select>
+                    </div>
+                    <button id="logout-btn" class="btn btn-ghost">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                            <polyline points="16 17 21 12 16 7"/>
+                            <line x1="21" y1="12" x2="9" y2="12"/>
+                        </svg>
+                    </button>
+                </div>
             </div>
         </header>
 
@@ -73,7 +79,7 @@
                     
                     <div class="form-group">
                         <label for="goal-title">What's your goal?</label>
-                        <input type="text" id="goal-title" name="title" placeholder="e.g., Run a marathon" required>
+                        <input type="text" id="goal-title" name="title" placeholder="e.g., Run a 5K race" required>
                     </div>
                     
                     <div class="form-group">
@@ -93,6 +99,24 @@
                             <label for="goal-target">Target Date</label>
                             <input type="date" id="goal-target" name="target_date">
                         </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="goal-is-habit" name="is_habit">
+                            <span>This is a recurring habit/routine</span>
+                        </label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Milestones (optional)</label>
+                        <p class="form-hint">Break this goal into smaller steps</p>
+                        <div id="milestones-container">
+                            <!-- Milestone inputs added dynamically -->
+                        </div>
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="addMilestoneInput()">
+                            + Add milestone
+                        </button>
                     </div>
                     
                     <div class="form-actions">
@@ -140,6 +164,30 @@
                 </div>
             </div>
         </div>
+
+        <!-- Add Milestone Modal -->
+        <div id="add-milestone-modal" class="modal hidden">
+            <div class="modal-backdrop"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Add Milestone</h2>
+                    <button class="modal-close" onclick="closeModal('add-milestone-modal')">&times;</button>
+                </div>
+                <form id="add-milestone-form">
+                    <input type="hidden" id="milestone-goal-id">
+                    
+                    <div class="form-group">
+                        <label for="milestone-title">What's the milestone?</label>
+                        <input type="text" id="milestone-title" name="title" placeholder="e.g., Complete week 1 of C25K" required>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('add-milestone-modal')">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Milestone</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
     <!-- Confetti Canvas -->
@@ -148,4 +196,3 @@
     <script src="/static/app.js"></script>
 </body>
 </html>
-

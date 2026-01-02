@@ -1,5 +1,5 @@
 """
-Goals Tracker API - FastAPI backend for couples' New Year's resolution tracking.
+G&M Yearly Goals Tracker - FastAPI backend for couples' yearly resolution tracking.
 """
 
 import os
@@ -14,10 +14,11 @@ from fastapi.responses import FileResponse, JSONResponse
 from sqlalchemy.orm import Session
 from jose import jwt, JWTError
 
-from database import init_db, get_db, Goal, CheckIn
+from database import init_db, get_db, Goal, CheckIn, Milestone
 from models import (
     GoalCreate, GoalUpdate, GoalResponse,
     CheckInCreate, CheckInResponse,
+    MilestoneCreate, MilestoneUpdate, MilestoneResponse,
     LoginRequest, LoginResponse,
     VALID_CATEGORIES
 )
@@ -53,7 +54,10 @@ if not APP_PASSWORD_HASH:
 
 # Person names (configurable via env)
 PERSON_1_NAME = os.environ.get("PERSON_1_NAME", "Mark")
-PERSON_2_NAME = os.environ.get("PERSON_2_NAME", "Partner")
+PERSON_2_NAME = os.environ.get("PERSON_2_NAME", "Gabs")
+
+# Current year default
+CURRENT_YEAR = int(os.environ.get("CURRENT_YEAR", datetime.now().year))
 
 
 # ============ App Setup ============
@@ -65,9 +69,9 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(
-    title="Goals Tracker",
-    description="Track New Year's goals together",
-    version="1.0.0",
+    title="G&M Yearly Goals Tracker",
+    description="Track yearly goals together - Mark & Gabs",
+    version="2.0.0",
     lifespan=lifespan
 )
 
@@ -168,20 +172,38 @@ async def get_config(authenticated: bool = Depends(get_current_user)):
     """Get app configuration."""
     return {
         "persons": [PERSON_1_NAME, PERSON_2_NAME],
-        "categories": VALID_CATEGORIES
+        "categories": VALID_CATEGORIES,
+        "currentYear": CURRENT_YEAR
     }
+
+
+@app.get("/api/years")
+async def get_years(
+    db: Session = Depends(get_db),
+    authenticated: bool = Depends(get_current_user)
+):
+    """Get all years that have goals."""
+    years = db.query(Goal.year).distinct().order_by(Goal.year.desc()).all()
+    year_list = [y[0] for y in years]
+    # Always include current year
+    if CURRENT_YEAR not in year_list:
+        year_list.insert(0, CURRENT_YEAR)
+    return {"years": year_list}
 
 
 # ============ Goal Routes ============
 
 @app.get("/api/goals", response_model=List[GoalResponse])
 async def list_goals(
+    year: Optional[int] = None,
     person: Optional[str] = None,
     db: Session = Depends(get_db),
     authenticated: bool = Depends(get_current_user)
 ):
-    """List all goals, optionally filtered by person."""
+    """List all goals, optionally filtered by year and/or person."""
     query = db.query(Goal)
+    if year:
+        query = query.filter(Goal.year == year)
     if person:
         query = query.filter(Goal.person == person)
     goals = query.order_by(Goal.created_at.desc()).all()
@@ -194,15 +216,29 @@ async def create_goal(
     db: Session = Depends(get_db),
     authenticated: bool = Depends(get_current_user)
 ):
-    """Create a new goal."""
+    """Create a new goal with optional milestones."""
     db_goal = Goal(
+        year=goal.year,
         person=goal.person,
         title=goal.title,
         description=goal.description,
         category=goal.category,
-        target_date=goal.target_date
+        target_date=goal.target_date,
+        is_habit=goal.is_habit
     )
     db.add(db_goal)
+    db.commit()
+    db.refresh(db_goal)
+    
+    # Add milestones if provided
+    for i, milestone_title in enumerate(goal.milestones):
+        milestone = Milestone(
+            goal_id=db_goal.id,
+            title=milestone_title,
+            order=i
+        )
+        db.add(milestone)
+    
     db.commit()
     db.refresh(db_goal)
     return db_goal
@@ -248,12 +284,86 @@ async def delete_goal(
     db: Session = Depends(get_db),
     authenticated: bool = Depends(get_current_user)
 ):
-    """Delete a goal and all its check-ins."""
+    """Delete a goal and all its check-ins and milestones."""
     goal = db.query(Goal).filter(Goal.id == goal_id).first()
     if not goal:
         raise HTTPException(status_code=404, detail="Goal not found")
     
     db.delete(goal)
+    db.commit()
+    return None
+
+
+# ============ Milestone Routes ============
+
+@app.post("/api/goals/{goal_id}/milestones", response_model=MilestoneResponse, status_code=status.HTTP_201_CREATED)
+async def create_milestone(
+    goal_id: int,
+    milestone: MilestoneCreate,
+    db: Session = Depends(get_db),
+    authenticated: bool = Depends(get_current_user)
+):
+    """Add a milestone to a goal."""
+    goal = db.query(Goal).filter(Goal.id == goal_id).first()
+    if not goal:
+        raise HTTPException(status_code=404, detail="Goal not found")
+    
+    # Get max order
+    max_order = db.query(Milestone).filter(Milestone.goal_id == goal_id).count()
+    
+    db_milestone = Milestone(
+        goal_id=goal_id,
+        title=milestone.title,
+        order=max_order
+    )
+    db.add(db_milestone)
+    db.commit()
+    db.refresh(db_milestone)
+    return db_milestone
+
+
+@app.patch("/api/milestones/{milestone_id}", response_model=MilestoneResponse)
+async def update_milestone(
+    milestone_id: int,
+    milestone_update: MilestoneUpdate,
+    db: Session = Depends(get_db),
+    authenticated: bool = Depends(get_current_user)
+):
+    """Update a milestone (e.g., mark as completed)."""
+    milestone = db.query(Milestone).filter(Milestone.id == milestone_id).first()
+    if not milestone:
+        raise HTTPException(status_code=404, detail="Milestone not found")
+    
+    update_data = milestone_update.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(milestone, key, value)
+    
+    db.commit()
+    db.refresh(milestone)
+    
+    # Auto-update goal progress based on milestones
+    goal = milestone.goal
+    if goal.milestones:
+        completed = sum(1 for m in goal.milestones if m.completed)
+        total = len(goal.milestones)
+        goal.progress = int((completed / total) * 100)
+        db.commit()
+    
+    return milestone
+
+
+@app.delete("/api/milestones/{milestone_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_milestone(
+    milestone_id: int,
+    db: Session = Depends(get_db),
+    authenticated: bool = Depends(get_current_user)
+):
+    """Delete a milestone."""
+    milestone = db.query(Milestone).filter(Milestone.id == milestone_id).first()
+    if not milestone:
+        raise HTTPException(status_code=404, detail="Milestone not found")
+    
+    db.delete(milestone)
     db.commit()
     return None
 
@@ -316,8 +426,8 @@ async def trigger_monthly_summary(
     
     from email_service import send_monthly_summary
     
-    # Get all goals with check-ins
-    goals = db.query(Goal).all()
+    # Get current year goals with check-ins
+    goals = db.query(Goal).filter(Goal.year == CURRENT_YEAR).all()
     goals_data = []
     for goal in goals:
         goal_dict = {
@@ -328,6 +438,7 @@ async def trigger_monthly_summary(
             "category": goal.category,
             "progress": goal.progress,
             "target_date": goal.target_date,
+            "is_habit": goal.is_habit,
             "created_at": goal.created_at.isoformat() if goal.created_at else None,
             "checkins": [
                 {
@@ -336,6 +447,14 @@ async def trigger_monthly_summary(
                     "created_at": c.created_at.isoformat() if c.created_at else None
                 }
                 for c in goal.checkins
+            ],
+            "milestones": [
+                {
+                    "id": m.id,
+                    "title": m.title,
+                    "completed": m.completed
+                }
+                for m in goal.milestones
             ]
         }
         goals_data.append(goal_dict)
@@ -356,8 +475,8 @@ async def send_test_email(
     """Send a test email to verify configuration."""
     from email_service import send_monthly_summary
     
-    # Get all goals with check-ins
-    goals = db.query(Goal).all()
+    # Get current year goals with check-ins
+    goals = db.query(Goal).filter(Goal.year == CURRENT_YEAR).all()
     goals_data = []
     for goal in goals:
         goal_dict = {
@@ -368,6 +487,7 @@ async def send_test_email(
             "category": goal.category,
             "progress": goal.progress,
             "target_date": goal.target_date,
+            "is_habit": goal.is_habit,
             "created_at": goal.created_at.isoformat() if goal.created_at else None,
             "checkins": [
                 {
@@ -376,6 +496,14 @@ async def send_test_email(
                     "created_at": c.created_at.isoformat() if c.created_at else None
                 }
                 for c in goal.checkins
+            ],
+            "milestones": [
+                {
+                    "id": m.id,
+                    "title": m.title,
+                    "completed": m.completed
+                }
+                for m in goal.milestones
             ]
         }
         goals_data.append(goal_dict)
@@ -415,4 +543,3 @@ async def health_check():
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 8000)))
-

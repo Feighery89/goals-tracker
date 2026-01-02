@@ -16,7 +16,7 @@ RECIPIENT_EMAILS = os.environ.get("RECIPIENT_EMAILS", "").split(",")
 
 # Person names
 PERSON_1_NAME = os.environ.get("PERSON_1_NAME", "Mark")
-PERSON_2_NAME = os.environ.get("PERSON_2_NAME", "Partner")
+PERSON_2_NAME = os.environ.get("PERSON_2_NAME", "Gabs")
 
 
 def get_motivational_quote() -> str:
@@ -100,7 +100,7 @@ def generate_monthly_email(goals: List[Dict[str, Any]]) -> tuple[str, str]:
     completed_goals = sum(1 for g in goals if g.get('progress', 0) == 100)
     avg_progress = sum(g.get('progress', 0) for g in goals) / total_goals if total_goals > 0 else 0
     
-    subject = f"🎯 Your Goals Update – {month_name}"
+    subject = f"💕 G&M Goals Update – {month_name}"
     
     html_content = f"""
     <!DOCTYPE html>

@@ -2,7 +2,7 @@
 
 import os
 from datetime import datetime
-from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, ForeignKey
+from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, ForeignKey, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 
@@ -22,20 +22,37 @@ Base = declarative_base()
 
 
 class Goal(Base):
-    """Goal model for tracking New Year's resolutions."""
+    """Goal model for tracking yearly resolutions."""
     __tablename__ = "goals"
     
     id = Column(Integer, primary_key=True, index=True)
-    person = Column(String(50), nullable=False, index=True)  # "mark" or "fiancee"
+    year = Column(Integer, nullable=False, default=2026, index=True)  # Year for this goal
+    person = Column(String(50), nullable=False, index=True)  # "Mark" or "Gabs"
     title = Column(String(200), nullable=False)
     description = Column(Text, default="")
     category = Column(String(50), default="Personal")
     progress = Column(Integer, default=0)  # 0-100
     target_date = Column(String(10), nullable=True)  # YYYY-MM-DD
+    is_habit = Column(Boolean, default=False)  # For recurring/habit goals
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     checkins = relationship("CheckIn", back_populates="goal", cascade="all, delete-orphan")
+    milestones = relationship("Milestone", back_populates="goal", cascade="all, delete-orphan")
+
+
+class Milestone(Base):
+    """Milestone/sub-task model for breaking down goals."""
+    __tablename__ = "milestones"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    goal_id = Column(Integer, ForeignKey("goals.id"), nullable=False)
+    title = Column(String(200), nullable=False)
+    completed = Column(Boolean, default=False)
+    order = Column(Integer, default=0)  # For ordering milestones
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    goal = relationship("Goal", back_populates="milestones")
 
 
 class CheckIn(Base):
@@ -62,4 +79,3 @@ def get_db():
         yield db
     finally:
         db.close()
-

@@ -1,10 +1,10 @@
-# Render Blueprint for Goals Tracker
+# Render Blueprint for G&M Yearly Goals Tracker
 # https://render.com/docs/blueprint-spec
 
 services:
   # Main web service
   - type: web
-    name: goals-tracker
+    name: gm-goals-tracker
     runtime: python
     region: oregon
     plan: free
@@ -12,7 +12,7 @@ services:
     startCommand: cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
-        value: "3.11"
+        value: "3.11.6"
       - key: DB_PATH
         value: /var/data/goals.db
       - key: SECRET_KEY
@@ -22,9 +22,9 @@ services:
       - key: APP_PASSWORD
         sync: false  # Set manually
       - key: PERSON_1_NAME
-        sync: false  # Set manually (e.g., "Mark")
+        value: "Mark"
       - key: PERSON_2_NAME
-        sync: false  # Set manually (e.g., "Sarah")
+        value: "Gabs"
       - key: GMAIL_ADDRESS
         sync: false  # Set manually
       - key: GMAIL_APP_PASSWORD
@@ -44,7 +44,7 @@ services:
 
   # Monthly email cron job
   - type: cron
-    name: goals-monthly-email
+    name: gm-goals-monthly-email
     runtime: python
     region: oregon
     plan: free
@@ -71,12 +71,12 @@ services:
     envVars:
       - key: WEB_SERVICE_URL
         fromService:
-          name: goals-tracker
+          name: gm-goals-tracker
           type: web
           property: url
       - key: CRON_SECRET
         fromService:
-          name: goals-tracker
+          name: gm-goals-tracker
           type: web
           envVarKey: CRON_SECRET
 
