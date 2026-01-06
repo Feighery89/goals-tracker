@@ -2,33 +2,33 @@
 :root {
     --font-display: 'Crimson Pro', Georgia, serif;
     --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-    
+
     /* Warm sunrise palette */
     --gradient-start: #fef3e2;
     --gradient-mid: #fce7d6;
     --gradient-end: #fad4c0;
-    
+
     --color-primary: #e07b53;
     --color-primary-dark: #c96a45;
     --color-primary-light: #f5a882;
-    
+
     --color-accent: #5b8a72;
     --color-accent-light: #7ba893;
-    
+
     --color-surface: #ffffff;
     --color-surface-elevated: #fffbf7;
-    
+
     --color-text: #3d3029;
     --color-text-secondary: #6b5c52;
     --color-text-muted: #9a8b80;
-    
+
     --color-border: #e8ddd4;
     --color-border-light: #f2ebe5;
-    
+
     --color-success: #5b8a72;
     --color-warning: #d4a253;
     --color-danger: #c75d4d;
-    
+
     /* Category colors */
     --cat-health: #5b8a72;
     --cat-finance: #4a7c9b;
@@ -36,23 +36,25 @@
     --cat-relationship: #c75d7a;
     --cat-personal: #d4a253;
     --cat-other: #6b5c52;
-    
+
     --radius-sm: 8px;
     --radius-md: 12px;
     --radius-lg: 20px;
     --radius-full: 9999px;
-    
+
     --shadow-sm: 0 1px 3px rgba(61, 48, 41, 0.08);
     --shadow-md: 0 4px 12px rgba(61, 48, 41, 0.1);
     --shadow-lg: 0 8px 30px rgba(61, 48, 41, 0.12);
-    
+
     --transition-fast: 150ms ease;
     --transition-normal: 250ms ease;
     --transition-slow: 400ms ease;
 }
 
 /* ============ Reset & Base ============ */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
@@ -99,8 +101,15 @@ body {
 }
 
 @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
 }
 
 .login-container h1 {
@@ -295,14 +304,20 @@ body {
     animation-fill-mode: both;
 }
 
-.person-column:nth-child(1) { animation-delay: 0.1s; }
-.person-column:nth-child(2) { animation-delay: 0.2s; }
+.person-column:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.person-column:nth-child(2) {
+    animation-delay: 0.2s;
+}
 
 @keyframes fadeInUp {
     from {
         opacity: 0;
         transform: translateY(20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -488,12 +503,29 @@ body {
     background: var(--cat-color, var(--color-text-muted));
 }
 
-.goal-category[data-category="Health"]::before { --cat-color: var(--cat-health); }
-.goal-category[data-category="Finance"]::before { --cat-color: var(--cat-finance); }
-.goal-category[data-category="Career"]::before { --cat-color: var(--cat-career); }
-.goal-category[data-category="Relationship"]::before { --cat-color: var(--cat-relationship); }
-.goal-category[data-category="Personal"]::before { --cat-color: var(--cat-personal); }
-.goal-category[data-category="Other"]::before { --cat-color: var(--cat-other); }
+.goal-category[data-category="Health"]::before {
+    --cat-color: var(--cat-health);
+}
+
+.goal-category[data-category="Finance"]::before {
+    --cat-color: var(--cat-finance);
+}
+
+.goal-category[data-category="Career"]::before {
+    --cat-color: var(--cat-career);
+}
+
+.goal-category[data-category="Relationship"]::before {
+    --cat-color: var(--cat-relationship);
+}
+
+.goal-category[data-category="Personal"]::before {
+    --cat-color: var(--cat-personal);
+}
+
+.goal-category[data-category="Other"]::before {
+    --cat-color: var(--cat-other);
+}
 
 .goal-card-actions {
     display: flex;
@@ -740,6 +772,7 @@ body {
         opacity: 0;
         transform: scale(0.95) translateY(10px);
     }
+
     to {
         opacity: 1;
         transform: scale(1) translateY(0);
@@ -945,7 +978,9 @@ body {
 }
 
 @keyframes fadeIn {
-    to { opacity: 1; }
+    to {
+        opacity: 1;
+    }
 }
 
 /* ============ Responsive ============ */
@@ -953,25 +988,24 @@ body {
     .header-content {
         padding: 1rem;
     }
-    
+
     .dashboard {
         padding: 1rem;
     }
-    
+
     .person-header {
         padding: 1rem 1.25rem;
     }
-    
+
     .goals-list {
         padding: 0.75rem;
     }
-    
+
     .form-row {
         grid-template-columns: 1fr;
     }
-    
+
     .login-container {
         padding: 2rem 1.5rem;
     }
 }
-

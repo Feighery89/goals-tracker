@@ -19,17 +19,17 @@ async function api(endpoint, options = {}) {
         },
         credentials: 'include'
     });
-    
+
     if (res.status === 401) {
         showLogin();
         throw new Error('Unauthorized');
     }
-    
+
     if (!res.ok) {
         const err = await res.json().catch(() => ({ detail: 'An error occurred' }));
         throw new Error(err.detail || 'An error occurred');
     }
-    
+
     if (res.status === 204) return null;
     return res.json();
 }
@@ -42,7 +42,7 @@ async function login(password) {
             method: 'POST',
             body: JSON.stringify({ password })
         });
-        
+
         if (result.success) {
             showApp();
             return true;
@@ -91,14 +91,14 @@ async function loadGoals() {
 
 function populateCategories() {
     const select = document.getElementById('goal-category');
-    select.innerHTML = config.categories.map(cat => 
+    select.innerHTML = config.categories.map(cat =>
         `<option value="${cat}">${cat}</option>`
     ).join('');
 }
 
 function populateYearSelector(years) {
     const select = document.getElementById('year-select');
-    select.innerHTML = years.map(year => 
+    select.innerHTML = years.map(year =>
         `<option value="${year}" ${year === selectedYear ? 'selected' : ''}>${year}</option>`
     ).join('');
 }
@@ -107,11 +107,11 @@ function populateYearSelector(years) {
 
 function renderGoals() {
     const grid = document.getElementById('dashboard-grid');
-    
+
     grid.innerHTML = config.persons.map((person, idx) => {
         const personGoals = goals.filter(g => g.person === person);
         const emoji = idx === 0 ? '👨' : '👩';
-        
+
         return `
             <div class="person-column">
                 <div class="person-header">
@@ -124,14 +124,14 @@ function renderGoals() {
                     </button>
                 </div>
                 <div class="goals-list">
-                    ${personGoals.length === 0 
-                        ? `<div class="empty-state">
+                    ${personGoals.length === 0
+                ? `<div class="empty-state">
                                <div class="empty-state-icon">🎯</div>
                                <p>No goals yet for ${selectedYear}</p>
                                <p style="font-size: 0.875rem">Click + to add one!</p>
                            </div>`
-                        : personGoals.map(renderGoalCard).join('')
-                    }
+                : personGoals.map(renderGoalCard).join('')
+            }
                 </div>
             </div>
         `;
@@ -141,10 +141,10 @@ function renderGoals() {
 function renderGoalCard(goal) {
     const circumference = 2 * Math.PI * 22;
     const offset = circumference - (goal.progress / 100) * circumference;
-    
+
     const completedMilestones = goal.milestones?.filter(m => m.completed).length || 0;
     const totalMilestones = goal.milestones?.length || 0;
-    
+
     let milestonesHtml = '';
     if (totalMilestones > 0) {
         milestonesHtml = `
@@ -161,7 +161,7 @@ function renderGoalCard(goal) {
             </div>
         `;
     }
-    
+
     return `
         <div class="goal-card" onclick="openGoalDetail(${goal.id})">
             ${goal.is_habit ? '<span class="habit-badge">Habit</span>' : ''}
@@ -220,9 +220,9 @@ function openAddGoalModal(person) {
 function addMilestoneInput() {
     const container = document.getElementById('milestones-container');
     const count = container.children.length;
-    
+
     if (count >= 10) return; // Max 10 milestones
-    
+
     const row = document.createElement('div');
     row.className = 'milestone-input-row';
     row.innerHTML = `
@@ -241,13 +241,13 @@ function openCheckinModal(goalId) {
 async function openGoalDetail(goalId) {
     const goal = goals.find(g => g.id === goalId);
     if (!goal) return;
-    
+
     document.getElementById('detail-goal-title').textContent = goal.title;
-    
+
     const content = document.getElementById('goal-detail-content');
     const circumference = 2 * Math.PI * 40;
     const offset = circumference - (goal.progress / 100) * circumference;
-    
+
     let milestonesHtml = '';
     if (goal.milestones?.length > 0) {
         milestonesHtml = `
@@ -283,7 +283,7 @@ async function openGoalDetail(goalId) {
             </div>
         `;
     }
-    
+
     content.innerHTML = `
         <div style="display: flex; gap: 2rem; align-items: flex-start; margin-bottom: 1.5rem;">
             <div class="progress-ring" style="width: 100px; height: 100px;">
@@ -321,8 +321,8 @@ async function openGoalDetail(goalId) {
         <div class="detail-section">
             <h3>📝 Check-ins (${goal.checkins?.length || 0})</h3>
             <div class="checkins-list" style="padding-left: 1.25rem;">
-                ${goal.checkins?.length > 0 
-                    ? goal.checkins.map(c => `
+                ${goal.checkins?.length > 0
+            ? goal.checkins.map(c => `
                         <div class="checkin-item">
                             <p class="checkin-note">${escapeHtml(c.note)}</p>
                             <span class="checkin-date">${formatDateTime(c.created_at)}</span>
@@ -333,8 +333,8 @@ async function openGoalDetail(goalId) {
                             </button>
                         </div>
                     `).join('')
-                    : '<p style="color: var(--color-text-muted)">No check-ins yet</p>'
-                }
+            : '<p style="color: var(--color-text-muted)">No check-ins yet</p>'
+        }
             </div>
         </div>
         
@@ -347,7 +347,7 @@ async function openGoalDetail(goalId) {
             </button>
         </div>
     `;
-    
+
     openModal('goal-detail-modal');
 }
 
@@ -367,7 +367,7 @@ async function createGoal(formData) {
             milestones.push(val.trim());
         }
     }
-    
+
     const goal = {
         year: selectedYear,
         person: formData.get('person'),
@@ -378,12 +378,12 @@ async function createGoal(formData) {
         is_habit: formData.get('is_habit') === 'on',
         milestones
     };
-    
+
     await api('/goals', {
         method: 'POST',
         body: JSON.stringify(goal)
     });
-    
+
     await loadGoals();
     closeModal('add-goal-modal');
 }
@@ -393,14 +393,14 @@ async function updateGoalProgress(goalId, progress) {
         method: 'PATCH',
         body: JSON.stringify({ progress: parseInt(progress) })
     });
-    
+
     // Check for 100% completion
     if (parseInt(progress) === 100) {
         triggerConfetti();
     }
-    
+
     await loadGoals();
-    
+
     // Update detail modal if open
     const goal = goals.find(g => g.id === goalId);
     if (goal && !document.getElementById('goal-detail-modal').classList.contains('hidden')) {
@@ -410,7 +410,7 @@ async function updateGoalProgress(goalId, progress) {
 
 async function deleteGoal(goalId) {
     if (!confirm('Are you sure you want to delete this goal and all its check-ins?')) return;
-    
+
     await api(`/goals/${goalId}`, { method: 'DELETE' });
     closeModal('goal-detail-modal');
     await loadGoals();
@@ -421,17 +421,17 @@ async function createCheckin(goalId, note) {
         method: 'POST',
         body: JSON.stringify({ note })
     });
-    
+
     await loadGoals();
     closeModal('checkin-modal');
 }
 
 async function deleteCheckin(checkinId) {
     if (!confirm('Delete this check-in?')) return;
-    
+
     await api(`/checkins/${checkinId}`, { method: 'DELETE' });
     await loadGoals();
-    
+
     // Refresh detail modal
     const goalId = parseInt(document.getElementById('checkin-goal-id').value);
     if (goalId) {
@@ -444,7 +444,7 @@ async function createMilestone(goalId, title) {
         method: 'POST',
         body: JSON.stringify({ title })
     });
-    
+
     await loadGoals();
     closeModal('add-milestone-modal');
     openGoalDetail(goalId);
@@ -455,14 +455,14 @@ async function toggleMilestone(milestoneId, completed) {
         method: 'PATCH',
         body: JSON.stringify({ completed })
     });
-    
+
     await loadGoals();
-    
+
     // Refresh detail modal if open
     const modal = document.getElementById('goal-detail-modal');
     if (!modal.classList.contains('hidden')) {
-        const goalId = parseInt(document.getElementById('milestone-goal-id').value) || 
-                       goals.find(g => g.milestones?.some(m => m.id === milestoneId))?.id;
+        const goalId = parseInt(document.getElementById('milestone-goal-id').value) ||
+            goals.find(g => g.milestones?.some(m => m.id === milestoneId))?.id;
         if (goalId) {
             openGoalDetail(goalId);
         }
@@ -471,12 +471,12 @@ async function toggleMilestone(milestoneId, completed) {
 
 async function deleteMilestone(milestoneId) {
     if (!confirm('Delete this milestone?')) return;
-    
+
     const goal = goals.find(g => g.milestones?.some(m => m.id === milestoneId));
-    
+
     await api(`/milestones/${milestoneId}`, { method: 'DELETE' });
     await loadGoals();
-    
+
     if (goal) {
         openGoalDetail(goal.id);
     }
@@ -510,8 +510,8 @@ function formatDate(dateStr) {
 function formatDateTime(dateStr) {
     if (!dateStr) return '';
     const date = new Date(dateStr);
-    return date.toLocaleDateString('en-GB', { 
-        day: 'numeric', 
+    return date.toLocaleDateString('en-GB', {
+        day: 'numeric',
         month: 'short',
         hour: '2-digit',
         minute: '2-digit'
@@ -525,10 +525,10 @@ function triggerConfetti() {
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    
+
     const particles = [];
     const colors = ['#e07b53', '#5b8a72', '#d4a253', '#8b6bb5', '#c75d7a', '#4a7c9b'];
-    
+
     for (let i = 0; i < 150; i++) {
         particles.push({
             x: Math.random() * canvas.width,
@@ -540,11 +540,11 @@ function triggerConfetti() {
             rotation: Math.random() * 360
         });
     }
-    
+
     let frame = 0;
     function animate() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
+
         particles.forEach(p => {
             ctx.save();
             ctx.translate(p.x, p.y);
@@ -552,13 +552,13 @@ function triggerConfetti() {
             ctx.fillStyle = p.color;
             ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
             ctx.restore();
-            
+
             p.x += p.vx;
             p.y += p.vy;
             p.vy += 0.1;
             p.rotation += 5;
         });
-        
+
         frame++;
         if (frame < 150) {
             requestAnimationFrame(animate);
@@ -566,7 +566,7 @@ function triggerConfetti() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
     }
-    
+
     animate();
 }
 
@@ -576,7 +576,7 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const password = document.getElementById('password-input').value;
     const errorEl = document.getElementById('login-error');
-    
+
     const success = await login(password);
     if (!success) {
         errorEl.textContent = 'Incorrect password';
