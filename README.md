@@ -125,4 +125,3 @@ goals-tracker/
 ## License
 
 MIT
-
