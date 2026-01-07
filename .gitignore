@@ -11,9 +11,9 @@ env/
 dist/
 build/
 
-# Database
-*.db
-data/
+# Database (keeping small SQLite DBs tracked for safety)
+# *.db
+# data/
 
 # IDE
 .idea/
